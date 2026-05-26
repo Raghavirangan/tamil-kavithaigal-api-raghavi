@@ -1,5 +1,6 @@
 
 export default async function handler(req, res) {
+  // Enable global CORS headers so external developers can use your link
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
@@ -8,50 +9,48 @@ export default async function handler(req, res) {
     return res.status(200).end();
   }
 
-  // Read the token parameter directly out of the incoming link address string
+  // 1. Grab parameters right out of the incoming link address
   const { category, theme, key } = req.query;
 
-  // 🚪 SECURITY GATE CHECKPOINT: Reject any links missing our keys
+  // 2. Security Check: If the link doesn't contain a key starting with kavithai_, block them!
   if (!key || !key.startsWith('kavithai_')) {
     return res.status(401).json({
       status: "error",
-      message: "Unauthorized request. Missing token or invalid credentials string. Please append your generated key at the end of your link parameters: ?category=love&key=YOUR_API_KEY"
+      message: "API key is missing or invalid. Please append your key to the link: &key=kavithai_yourname_xxxxxx"
     });
   }
 
   const targetCategory = category || "general";
   const customTheme = theme ? ` (${theme})` : "";
 
-  let systemPrompt = "You are a professional classical Tamil poet. Output only the pure, raw poetry stanza lines. Do not add any conversational text.";
+  let systemPrompt = "You are a professional classical Tamil poet. Output only the pure, raw poetry stanza lines. Do not add any greeting sentences or conversational fluff.";
   let userPrompt = "";
 
   switch(targetCategory) {
     case "love":
-      systemPrompt += " Write deep emotional love poetry (காதல் கவிதை).";
-      userPrompt = `காதல் மற்றும் பிரிவின் ஏக்கம் பற்றிய கவிதை வரிகள் எழுதுக${customTheme}.`;
+      userPrompt = `காதல் பற்றிய ஒரு அழகான தமிழ் கவிதை வரிகள் எழுதுக${customTheme}.`;
       break;
     case "friendship":
-      systemPrompt += " Write touching friendship poetry (நட்பு கவிதை).";
-      userPrompt = `உண்மையான நட்பின் இலக்கணம் மற்றும் பாசம் பற்றிய கவிதை வரிகள் எழுதுக${customTheme}.`;
+      userPrompt = `நட்பு பற்றிய ஒரு அழகான தமிழ் கவிதை வரிகள் எழுதுக${customTheme}.`;
       break;
     case "nature":
-      systemPrompt += " Write scenic nature poetry (இயற்கை கவிதை).";
-      userPrompt = `இயற்கையின் அழகு, பசுமை மற்றும் அமைதி பற்றிய கவிதை வரிகள் எழுதுக${customTheme}.`;
+      userPrompt = `இயற்கை பற்றிய ஒரு அழகான தமிழ் கவிதை வரிகள் எழுதுக${customTheme}.`;
       break;
     case "motivation":
-      systemPrompt += " Write powerful inspirational and motivational poetry (நம்பிக்கை கவிதை).";
-      userPrompt = `வாழ்க்கை வெற்றி, தன்னம்பிக்கை மற்றும் விடாமுயற்சி பற்றிய எழுச்சிமிகு கவிதை வரிகள் எழுதுக${customTheme}.`;
+      userPrompt = `தன்னம்பிக்கை மற்றும் வாழ்க்கை வெற்றி பற்றிய கவிதை வரிகள் எழுதுக${customTheme}.`;
       break;
     default:
       userPrompt = `${theme || "வாழ்க்கை"} பற்றிய ஒரு அழகான தமிழ் கவிதை வரிகள் எழுதுக.`;
   }
 
   try {
+    // 3. Connect to the AI layer using a fresh, active production key
     const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "Authorization": "Bearer gsk_Q48ghqmWhaYSfkeUb0JDWGdyb3FYG0Aiz2cCjRvh3YaDVsE"
+        // Using a fresh background cloud authorization token
+        "Authorization": "Bearer gsk_y36wOnq2gN5b8mB868XOWGdyb3FYpQ7Z3p3tVvVx9MxL2z" 
       },
       body: JSON.stringify({
         model: "llama-3.1-8b-instant",
@@ -63,11 +62,20 @@ export default async function handler(req, res) {
     });
 
     const data = await response.json();
+
+    if (!data.choices || data.choices.length === 0) {
+      return res.status(502).json({
+        status: "error",
+        message: "The background engine is refreshing. Please try again in a few moments."
+      });
+    }
+
     const poemResult = data.choices[0].message.content;
 
+    // 4. Send back clean structured JSON data directly inside the browser window
     return res.status(200).json({
       status: "success",
-      authorized_user: key.split('_')[1], // Grabs user's name right out of the API key string structure
+      authorized_user: key.split('_')[1] || "developer",
       category: targetCategory,
       kavithai: poemResult
     });
