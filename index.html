@@ -2,28 +2,106 @@
 <html lang="ta">
 <head>
     <meta charset="UTF-8">
-    <title>Tamil Kavithaigal API</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tamil Kavithaigal API Platform</title>
     <style>
-        body { font-family: system-ui, sans-serif; max-width: 700px; margin: 50px auto; padding: 0 20px; line-height: 1.6; background: #fafafa; color: #333; }
-        code { background: #eef2f7; padding: 4px 8px; border-radius: 4px; font-family: monospace; color: #d63384; font-size: 1.1em; }
+        body { font-family: system-ui, sans-serif; max-width: 800px; margin: 40px auto; padding: 0 20px; line-height: 1.6; background: #fafafa; color: #333; }
+        h1 { color: #111; }
+        code { background: #eef2f7; padding: 4px 8px; border-radius: 4px; font-family: monospace; color: #d63384; font-size: 1.05em; }
         pre { background: #1e1e1e; color: #f8f8f2; padding: 15px; border-radius: 6px; overflow-x: auto; }
-        .endpoint { background: #fff; padding: 15px; border-left: 4px solid #0070f3; border-radius: 4px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+        
+        .generator-box { background: #fff; border: 1px solid #e1e8ed; padding: 25px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); margin: 30px 0; }
+        .control-group { display: flex; flex-direction: column; gap: 15px; margin-top: 15px; }
+        .inputs-row { display: flex; gap: 10px; flex-wrap: wrap; }
+        
+        select, input[type="text"] { padding: 12px; border: 2px solid #e1e8ed; border-radius: 8px; font-size: 1em; outline: none; background: white; }
+        select { min-width: 180px; cursor: pointer; }
+        input[type="text"] { flex: 1; min-width: 200px; }
+        select:focus, input[type="text"]:focus { border-color: #0070f3; }
+        
+        button { background: #0070f3; color: white; border: none; padding: 12px 24px; border-radius: 8px; font-size: 1em; font-weight: bold; cursor: pointer; transition: background 0.2s; }
+        button:hover { background: #0051cb; }
+        
+        .output-display { margin-top: 20px; padding: 25px; background: #fdf6e3; border-left: 5px solid #b58900; border-radius: 8px; font-size: 1.25em; white-space: pre-line; color: #586e75; font-style: italic; display: none; box-shadow: inset 0 1px 3px rgba(0,0,0,0.05); text-align: center; line-height: 1.8; }
+        .loading { color: #666; font-style: italic; display: none; margin-top: 15px; font-weight: 500; }
+        .endpoint-card { background: #f0f7ff; padding: 15px; border-left: 4px solid #0070f3; border-radius: 4px; margin-top: 20px; }
     </style>
 </head>
 <body>
-    <h1>📝 Tamil Kavithaigal API Platform</h1>
-    <p>A beautiful NewsAPI-style open public engine for automated Tamil poetry generation.</p>
+
+    <h1>📝 Tamil Kavithaigal Platform</h1>
+    <p>An interactive open portal for generating multiple genres of authentic automated Tamil poetry.</p>
     
-    <div class="endpoint">
-        <h3>Live Public Endpoint Route:</h3>
-        <code>GET /api/poetry?theme=rain</code>
+    <div class="generator-box">
+        <h3>✨ Select & Composing Suite</h3>
+        <p>Choose a category and add optional custom keywords to frame your stanzas:</p>
+        
+        <div class="control-group">
+            <div class="inputs-row">
+                <select id="categorySelect">
+                    <option value="love">💘 காதல் கவிதை (Love)</option>
+                    <option value="friendship">🤝 நட்பு கவிதை (Friendship)</option>
+                    <option value="nature">🌿 இயற்கை கவிதை (Nature)</option>
+                    <option value="motivation">🔥 நம்பிக்கை கவிதை (Inspirational)</option>
+                    <option value="general">✍️ பொதுவானவை (General)</option>
+                </select>
+                
+                <input type="text" id="themeInput" placeholder="Add custom keyword (optional)... e.g., நிலவு, பிரிவு, விழி">
+                
+                <button onclick="generateLivePoem()">Generate Poem</button>
+            </div>
+        </div>
+        
+        <div id="loadingText" class="loading">⚡ Tuning metrics and channeling your Tamil stanzas...</div>
+        <div id="poemOutput" class="output-display"></div>
     </div>
 
-    <h3>Example JSON Structure Output:</h3>
+    <h2>🛠️ Multi-Genre API Endpoints</h2>
+    <p>Pass the target parameters directly within the query request layer:</p>
+    
+    <div class="endpoint-card">
+        <strong>Query Structure:</strong><br>
+        <code>GET /api/poetry?category=love&theme=rain</code>
+    </div>
+
+    <h3>Example Structural Payload:</h3>
     <pre>{
   "status": "success",
-  "theme": "rain",
-  "kavithai": "விண் சிந்தும் துளிகளெல்லாம்...\nஉன் நினைவை தூறுதே..."
+  "category": "love",
+  "kavithai": "விழிகள் பேசும் மொழியில்...\nஉன் நினைவுகள் கரைகிறதே..."
 }</pre>
+
+    <script>
+        async function generateLivePoem() {
+            const category = document.getElementById('categorySelect').value;
+            const themeInput = document.getElementById('themeInput').value.trim();
+            
+            const loadingText = document.getElementById('loadingText');
+            const poemOutput = document.getElementById('poemOutput');
+            
+            loadingText.style.display = 'block';
+            poemOutput.style.display = 'none';
+            
+            try {
+                // Build explicit route parameter strings
+                const targetUrl = `/api/poetry?category=${category}&theme=${encodeURIComponent(themeInput)}`;
+                const response = await fetch(targetUrl);
+                const result = await response.json();
+                
+                if (result.status === 'success') {
+                    poemOutput.textContent = result.kavithai;
+                    poemOutput.style.display = 'block';
+                } else {
+                    poemOutput.textContent = "❌ Process halted on backend function tier.";
+                    poemOutput.style.display = 'block';
+                }
+            } catch (error) {
+                poemOutput.textContent = "❌ Connection Failed: " + error.message;
+                poemOutput.style.display = 'block';
+            } finally {
+                loadingText.style.display = 'none';
+            }
+        }
+    </script>
 </body>
 </html>
