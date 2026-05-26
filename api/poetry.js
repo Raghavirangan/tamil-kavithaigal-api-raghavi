@@ -1,6 +1,6 @@
 
 export default async function handler(req, res) {
-  // Enable global CORS headers so external developers can use your link
+  // 1. Absolute global CORS access definition layers
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
@@ -9,14 +9,14 @@ export default async function handler(req, res) {
     return res.status(200).end();
   }
 
-  // 1. Grab parameters right out of the incoming link address
+  // 2. Extract link parameters out of the incoming HTTP query line
   const { category, theme, key } = req.query;
 
-  // 2. Security Check: If the link doesn't contain a key starting with kavithai_, block them!
+  // 🚪 SECURITY GATE CHECKPOINT: Reject requests missing validation tokens
   if (!key || !key.startsWith('kavithai_')) {
     return res.status(401).json({
       status: "error",
-      message: "API key is missing or invalid. Please append your key to the link: &key=kavithai_yourname_xxxxxx"
+      message: "Unauthorized request. Missing token or invalid credentials string. Please append your key at the end of your link: &key=YOUR_API_KEY"
     });
   }
 
@@ -26,31 +26,31 @@ export default async function handler(req, res) {
   let systemPrompt = "You are a professional classical Tamil poet. Output only the pure, raw poetry stanza lines. Do not add any greeting sentences or conversational fluff.";
   let userPrompt = "";
 
+  // 3. Dynamic genre logic routing matrix
   switch(targetCategory) {
     case "love":
-      userPrompt = `காதல் பற்றிய ஒரு அழகான தமிழ் கவிதை வரிகள் எழுதுக${customTheme}.`;
+      userPrompt = `காதல் மற்றும் பிரிவின் ஏக்கம் பற்றிய கவிதை வரிகள் எழுதுக${customTheme}.`;
       break;
     case "friendship":
-      userPrompt = `நட்பு பற்றிய ஒரு அழகான தமிழ் கவிதை வரிகள் எழுதுக${customTheme}.`;
+      userPrompt = `உண்மையான நட்பின் இலக்கணம் மற்றும் பாசம் பற்றிய கவிதை வரிகள் எழுதுக${customTheme}.`;
       break;
     case "nature":
-      userPrompt = `இயற்கை பற்றிய ஒரு அழகான தமிழ் கவிதை வரிகள் எழுதுக${customTheme}.`;
+      userPrompt = `இயற்கையின் அழகு, பசுமை மற்றும் அமைதி பற்றிய கவிதை வரிகள் எழுதுக${customTheme}.`;
       break;
     case "motivation":
-      userPrompt = `தன்னம்பிக்கை மற்றும் வாழ்க்கை வெற்றி பற்றிய கவிதை வரிகள் எழுதுக${customTheme}.`;
+      userPrompt = `வாழ்க்கை வெற்றி, தன்னம்பிக்கை மற்றும் விடாமுயற்சி பற்றிய எழுச்சிமிகு கவிதை வரிகள் எழுதுக${customTheme}.`;
       break;
     default:
       userPrompt = `${theme || "வாழ்க்கை"} பற்றிய ஒரு அழகான தமிழ் கவிதை வரிகள் எழுதுக.`;
   }
 
   try {
-    // 3. Connect to the AI layer using a fresh, active production key
+    // 4. Secure cloud request dispatch using your permanent personal Groq engine key
     const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        // Using a fresh background cloud authorization token
-        "Authorization": "Bearer gsk_y36wOnq2gN5b8mB868XOWGdyb3FYpQ7Z3p3tVvVx9MxL2z" 
+        "Authorization": `Bearer ${process.env.GROQ_API_KEY}`
       },
       body: JSON.stringify({
         model: "llama-3.1-8b-instant",
@@ -63,20 +63,22 @@ export default async function handler(req, res) {
 
     const data = await response.json();
 
+    // 🛡️ Safety check layer if the cloud pipeline responses ever flag empty
     if (!data.choices || data.choices.length === 0) {
       return res.status(502).json({
         status: "error",
-        message: "The background engine is refreshing. Please try again in a few moments."
+        message: data.error ? data.error.message : "The backend LLM server did not produce a valid text choices packet arrays."
       });
     }
 
     const poemResult = data.choices[0].message.content;
 
-    // 4. Send back clean structured JSON data directly inside the browser window
+    // 5. Package pristine structured JSON payloads right inside the window
     return res.status(200).json({
       status: "success",
       authorized_user: key.split('_')[1] || "developer",
       category: targetCategory,
+      theme: theme || "general",
       kavithai: poemResult
     });
 

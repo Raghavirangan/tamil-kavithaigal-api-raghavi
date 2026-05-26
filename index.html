@@ -10,7 +10,6 @@
         code { background: #eef2f7; padding: 4px 8px; border-radius: 4px; font-family: monospace; color: #d63384; font-size: 1.05em; }
         pre { background: #1e1e1e; color: #f8f8f2; padding: 15px; border-radius: 6px; overflow-x: auto; }
         
-        /* Layout Blocks */
         .dashboard-box { background: #fff; border: 1px solid #e1e8ed; padding: 25px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); margin-bottom: 25px; }
         .inputs-row { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 15px; }
         
@@ -23,7 +22,6 @@
         .btn-success { background: #28a745; }
         .btn-success:hover { background: #218838; }
         
-        /* Key Display Badge */
         .key-badge { display: inline-block; background: #e2f0d9; color: #385723; padding: 10px 15px; border-radius: 6px; font-family: monospace; font-weight: bold; margin-top: 10px; font-size: 1.1em; border: 1px dashed #385723; }
         
         .output-display { margin-top: 20px; padding: 25px; background: #fdf6e3; border-left: 5px solid #b58900; border-radius: 8px; font-size: 1.25em; white-space: pre-line; color: #586e75; font-style: italic; display: none; text-align: center; line-height: 1.8; }
@@ -34,25 +32,25 @@
 <body>
 
     <h1>📝 Tamil Kavithaigal Developer Console</h1>
-    <p>A complete NewsAPI-style dashboard to register accounts, manage credentials, and pull poetry streams.</p>
+    <p>A complete Gemini-style dashboard to register accounts, manage tokens, and stream poetry directly into application link paths.</p>
     
     <div class="dashboard-box" style="border-top: 4px solid #28a745;">
         <h3>🔑 Developer Authentication Key Registry</h3>
-        <p>Register your developer workspace profile to instantly issue a secure production API authentication token:</p>
+        <p>Register your unique developer profile tag identifier to provision active access keys:</p>
         <div class="inputs-row">
-            <input type="text" id="usernameInput" placeholder="Enter your developer or company name...">
+            <input type="text" id="usernameInput" placeholder="Enter developer name...">
             <button class="btn-success" onclick="issueApiKey()">Generate API Key</button>
         </div>
         <div id="keyRegistryDisplay" style="display:none; margin-top:15px;">
-            <p>Your active live platform credentials token is ready:</p>
+            <p>Your permanent, isolated platform access token is active:</p>
             <div class="key-badge" id="generatedKey"></div>
-            <p style="font-size:0.85em; color:#666; margin-top:5px;">⚠️ Secure this token string. Append it as <code>&key=YOUR_KEY</code> inside all live HTTP URL resource requests.</p>
+            <p style="font-size:0.85em; color:#666; margin-top:5px;">⚠️ Append this parameter string as <code>&key=YOUR_KEY</code> to pass authorization metrics cleanly.</p>
         </div>
     </div>
 
     <div class="dashboard-box" style="border-top: 4px solid #0070f3;">
-        <h3>✨ Live Portal testing Sandbox</h3>
-        <p>Choose your target configurations to check endpoint compatibility:</p>
+        <h3>✨ Live Portal Testing Sandbox</h3>
+        <p>Verify data streams and compilation values by running mock operations:</p>
         
         <div class="inputs-row">
             <select id="categorySelect">
@@ -61,42 +59,38 @@
                 <option value="nature">🌿 இயற்கை கவிதை (Nature)</option>
                 <option value="motivation">🔥 நம்பிக்கை கவிதை (Inspirational)</option>
             </select>
-            <input type="text" id="themeInput" placeholder="Optional custom keyword modifiers (e.g., நிலவு)...">
+            <input type="text" id="themeInput" placeholder="Add custom theme keywords (optional)...">
             <button onclick="generateLivePoem()">Test Sandbox Route</button>
         </div>
         
-        <div id="loadingText" class="loading">⚡ Validating authorization key parameters and fetching verses...</div>
+        <div id="loadingText" class="loading">⚡ Instantiating client validation models and drafting stanzas...</div>
         <div id="poemOutput" class="output-display"></div>
     </div>
 
-    <h2>🛠️ Production Resource Link Routing</h2>
+    <h2>🛠️ Gemini-Style Routing Link Patterns</h2>
     <div class="endpoint-card">
-        <strong>Structured URL Pattern with Security Gating:</strong><br>
+        <strong>Direct Link address Endpoint Format:</strong><br>
         <code>GET /api/poetry?category=love&key=<span style="color:#28a745; font-weight:bold;">YOUR_GENERATED_KEY</span></code>
     </div>
 
     <script>
-        // 1. Core Logic to Generate a Unique Code for the user
         function issueApiKey() {
             const username = document.getElementById('usernameInput').value.trim();
             if (!username) {
-                alert("Please enter a developer name to provision credentials.");
+                alert("Please declare a user string identity block.");
                 return;
             }
             
-            // Clean up name string and append a randomized numerical token array sequence
             const cleanName = username.toLowerCase().replace(/[^a-z0-9]/g, '');
             const randomHex = Math.floor(100000 + Math.random() * 900000);
             const personalizedKey = `kavithai_${cleanName}_${randomHex}`;
             
-            // Save inside the user's browser local memory storage cache
             localStorage.setItem('my_platform_api_key', personalizedKey);
             
             document.getElementById('generatedKey').textContent = personalizedKey;
             document.getElementById('keyRegistryDisplay').style.display = 'block';
         }
 
-        // Auto-load token block if developer has visited before
         window.onload = function() {
             const savedKey = localStorage.getItem('my_platform_api_key');
             if (savedKey) {
@@ -105,13 +99,11 @@
             }
         };
 
-        // 2. Fetch Sequence passing the local Key token straight into our HTTP parameters
         async function generateLivePoem() {
             const savedKey = localStorage.getItem('my_platform_api_key');
             
-            // Block early at the UI level if they haven't made a key yet
             if (!savedKey) {
-                alert("Access Denied: Please generate a Developer API Key token first using the panel above.");
+                alert("Please execute a unique client developer token provisioning first via the panel menu.");
                 return;
             }
 
@@ -125,7 +117,6 @@
             poemOutput.style.display = 'none';
             
             try {
-                // Notice how we pass the validation key right inside the link structure: &key=
                 const targetUrl = `/api/poetry?category=${category}&theme=${encodeURIComponent(themeInput)}&key=${savedKey}`;
                 const response = await fetch(targetUrl);
                 const result = await response.json();
@@ -134,7 +125,7 @@
                     poemOutput.textContent = result.kavithai;
                     poemOutput.style.display = 'block';
                 } else {
-                    poemOutput.textContent = "❌ Server Message: " + result.message;
+                    poemOutput.textContent = "❌ Error: " + result.message;
                     poemOutput.style.display = 'block';
                 }
             } catch (error) {
