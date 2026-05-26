@@ -1,1 +1,29 @@
-<h1>Tamil Kavithaigal API Platform Live</h1>
+<!DOCTYPE html>
+<html lang="ta">
+<head>
+    <meta charset="UTF-8">
+    <title>Tamil Kavithaigal API</title>
+    <style>
+        body { font-family: system-ui, sans-serif; max-width: 700px; margin: 50px auto; padding: 0 20px; line-height: 1.6; background: #fafafa; color: #333; }
+        code { background: #eef2f7; padding: 4px 8px; border-radius: 4px; font-family: monospace; color: #d63384; font-size: 1.1em; }
+        pre { background: #1e1e1e; color: #f8f8f2; padding: 15px; border-radius: 6px; overflow-x: auto; }
+        .endpoint { background: #fff; padding: 15px; border-left: 4px solid #0070f3; border-radius: 4px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+    </style>
+</head>
+<body>
+    <h1>📝 Tamil Kavithaigal API Platform</h1>
+    <p>A beautiful NewsAPI-style open public engine for automated Tamil poetry generation.</p>
+    
+    <div class="endpoint">
+        <h3>Live Public Endpoint Route:</h3>
+        <code>GET /api/poetry?theme=rain</code>
+    </div>
+
+    <h3>Example JSON Structure Output:</h3>
+    <pre>{
+  "status": "success",
+  "theme": "rain",
+  "kavithai": "விண் சிந்தும் துளிகளெல்லாம்...\nஉன் நினைவை தூறுதே..."
+}</pre>
+</body>
+</html>
