@@ -1,88 +1,65 @@
+// api/poetry.js
 
 export default async function handler(req, res) {
-  // 1. Absolute global CORS access definition layers
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+    // 1. Enable CORS headers so JSFiddle can talk to your API safely
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
 
-  if (req.method === 'OPTIONS') {
-    return res.status(200).end();
-  }
-
-  // 2. Extract link parameters out of the incoming HTTP query line
-  const { category, theme, key } = req.query;
-
-  // 🚪 SECURITY GATE CHECKPOINT: Reject requests missing validation tokens
-  if (!key || !key.startsWith('kavithai_')) {
-    return res.status(401).json({
-      status: "error",
-      message: "Unauthorized request. Missing token or invalid credentials string. Please append your key at the end of your link: &key=YOUR_API_KEY"
-    });
-  }
-
-  const targetCategory = category || "general";
-  const customTheme = theme ? ` (${theme})` : "";
-
-  let systemPrompt = "You are a professional classical Tamil poet. Output only the pure, raw poetry stanza lines. Do not add any greeting sentences or conversational fluff.";
-  let userPrompt = "";
-
-  // 3. Dynamic genre logic routing matrix
-  switch(targetCategory) {
-    case "love":
-      userPrompt = `காதல் மற்றும் பிரிவின் ஏக்கம் பற்றிய கவிதை வரிகள் எழுதுக${customTheme}.`;
-      break;
-    case "friendship":
-      userPrompt = `உண்மையான நட்பின் இலக்கணம் மற்றும் பாசம் பற்றிய கவிதை வரிகள் எழுதுக${customTheme}.`;
-      break;
-    case "nature":
-      userPrompt = `இயற்கையின் அழகு, பசுமை மற்றும் அமைதி பற்றிய கவிதை வரிகள் எழுதுக${customTheme}.`;
-      break;
-    case "motivation":
-      userPrompt = `வாழ்க்கை வெற்றி, தன்னம்பிக்கை மற்றும் விடாமுயற்சி பற்றிய எழுச்சிமிகு கவிதை வரிகள் எழுதுக${customTheme}.`;
-      break;
-    default:
-      userPrompt = `${theme || "வாழ்க்கை"} பற்றிய ஒரு அழகான தமிழ் கவிதை வரிகள் எழுதுக.`;
-  }
-
-  try {
-    // 4. Secure cloud request dispatch using your permanent personal Groq engine key
-    const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${process.env.GROQ_API_KEY}`
-      },
-      body: JSON.stringify({
-        model: "llama-3.1-8b-instant",
-        messages: [
-          { role: "system", content: systemPrompt },
-          { role: "user", content: userPrompt }
-        ]
-      })
-    });
-
-    const data = await response.json();
-
-    // 🛡️ Safety check layer if the cloud pipeline responses ever flag empty
-    if (!data.choices || data.choices.length === 0) {
-      return res.status(502).json({
-        status: "error",
-        message: data.error ? data.error.message : "The backend LLM server did not produce a valid text choices packet arrays."
-      });
+    // Handle browser preflight CORS checks
+    if (req.method === 'OPTIONS') {
+        return res.status(200).end();
     }
 
-    const poemResult = data.choices[0].message.content;
+    // 2. Handle GET Requests (Fetching a poem)
+    if (req.method === 'GET') {
+        const { category } = req.query;
 
-    // 5. Package pristine structured JSON payloads right inside the window
-    return res.status(200).json({
-      status: "success",
-      authorized_user: key.split('_')[1] || "developer",
-      category: targetCategory,
-      theme: theme || "general",
-      kavithai: poemResult
-    });
+        // Default fallback poem
+        let poemText = "உன் நினைவுகளின் தேடலில்...\n(This is a beautiful placeholder poem from your backend!)";
+        
+        if (category === 'love') {
+            poemText = "காதல் என்பது கவிதை மழையாய்...\nநெஞ்சினில் நனையும் இனிய நிலவாய்! 🌸";
+        } else if (category === 'nature') {
+            poemText = "பச்சை பசேல் என்ற வயல்வெளியும்...\nகூவும் குயிலின் கீதமும் இயற்கை அழகு! 🍃";
+        } else if (category === 'life') {
+            poemText = "விழுும்போது விதையாவாய்...\nஎழும்போது விருட்சமாவாய்! இதுவே வாழ்க்கை! ☀️";
+        }
 
-  } catch (error) {
-    return res.status(500).json({ status: "error", message: error.message });
-  }
+        return res.status(200).json({
+            id: `poem_${category || 'general'}_${Date.now()}`,
+            kavithai: poemText
+        });
+    }
+
+    // 3. Handle POST Requests (Liking a poem OR Submitting a poem)
+    if (req.method === 'POST') {
+        const { id, title, content } = req.body;
+
+        // Case A: It's a "Like" action (frontend sends an 'id')
+        if (id) {
+            console.log(`Poem upvoted: ${id}`);
+            const simulatedLikesCount = Math.floor(Math.random() * 45) + 5; 
+            
+            return res.status(200).json({
+                message: "Like registered successfully!",
+                id: id,
+                likes: simulatedLikesCount
+            });
+        }
+
+        // Case B: It's a "Create/Submit" action (frontend sends 'title' and 'content')
+        if (title && content) {
+            console.log("New poem submitted:", { title, content });
+            
+            return res.status(201).json({
+                message: "Poem created successfully!",
+                status: "success"
+            });
+        }
+
+        return res.status(400).json({ error: "Invalid POST request data format structure." });
+    }
+
+    return res.status(405).json({ error: `Method ${req.method} Not Allowed` });
 }
