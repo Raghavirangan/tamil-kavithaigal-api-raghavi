@@ -12,7 +12,6 @@ export default async function handler(req, res) {
 
     // 2. Capture incoming parameters from both GET queries and POST bodies safely
     const category = req.query.category || req.body.category || 'general';
-    const key = req.query.key || req.body.key;
 
     // 3. Handle GET Requests (Generating Poems)
     if (req.method === 'GET') {
@@ -20,7 +19,7 @@ export default async function handler(req, res) {
         // Dynamic fallback poems array dictionary
         let poemText = "உன் நினைவுகளின் தேடலில்...\n(A beautiful custom verse is waiting for you!)";
         
-        // Normalizing category names to match both English choices and Tamil choices
+        // Normalizing category names to match both English choices and Tamil choices from your UI
         if (category.includes('love') || category.includes('காதல்')) {
             poemText = "காதல் என்பது கவிதை மழையாய்...\nநெஞ்சினில் நனையும் இனிய நிலவாய்! 🌸";
         } else if (category.includes('nature') || category.includes('இயற்கை')) {
@@ -44,12 +43,12 @@ export default async function handler(req, res) {
     if (req.method === 'POST') {
         const { id, title, content } = req.body;
 
-        // Sandbox/JSFiddle Like Operation Counter Handler
+        // Sandbox/JSFiddle Like Operation Counter Handler (FIXED Math.floor here)
         if (id) {
             return res.status(200).json({
                 message: "Like registered successfully!",
                 id: id,
-                likes: Math.fold(Math.random() * 30) + 5
+                likes: Math.floor(Math.random() * 30) + 5
             });
         }
 
