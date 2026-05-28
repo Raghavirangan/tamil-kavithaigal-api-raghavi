@@ -1,64 +1,65 @@
 // api/poetry.js
 
 export default async function handler(req, res) {
-    // 1. Enable CORS headers so JSFiddle can talk to your API safely
+    // 1. Unlocked CORS Policy (Allows both your Vercel Sandbox and JSFiddle)
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
 
-    // Handle browser preflight CORS checks
     if (req.method === 'OPTIONS') {
         return res.status(200).end();
     }
 
-    // 2. Handle GET Requests (Fetching a poem)
-    if (req.method === 'GET') {
-        const { category } = req.query;
+    // 2. Capture incoming parameters from both GET queries and POST bodies safely
+    const category = req.query.category || req.body.category || 'general';
+    const key = req.query.key || req.body.key;
 
-        // Default fallback poem
-        let poemText = "உன் நினைவுகளின் தேடலில்...\n(This is a beautiful placeholder poem from your backend!)";
+    // 3. Handle GET Requests (Generating Poems)
+    if (req.method === 'GET') {
         
-        if (category === 'love') {
+        // Dynamic fallback poems array dictionary
+        let poemText = "உன் நினைவுகளின் தேடலில்...\n(A beautiful custom verse is waiting for you!)";
+        
+        // Normalizing category names to match both English choices and Tamil choices
+        if (category.includes('love') || category.includes('காதல்')) {
             poemText = "காதல் என்பது கவிதை மழையாய்...\nநெஞ்சினில் நனையும் இனிய நிலவாய்! 🌸";
-        } else if (category === 'nature') {
+        } else if (category.includes('nature') || category.includes('இயற்கை')) {
             poemText = "பச்சை பசேல் என்ற வயல்வெளியும்...\nகூவும் குயிலின் கீதமும் இயற்கை அழகு! 🍃";
-        } else if (category === 'life') {
+        } else if (category.includes('life') || category.includes('வாழ்க்கை')) {
             poemText = "விழுும்போது விதையாவாய்...\nஎழும்போது விருட்சமாவாய்! இதுவே வாழ்க்கை! ☀️";
+        } else if (category.includes('Friendship') || category.includes('நட்பு')) {
+            poemText = "முகவரி இல்லா பயணத்தில் கூட...\nமுடிவில்லா அன்பு தருவது தூய்மையான நட்பு! 🤝";
         }
 
+        // Return the exact structure your sandbox UI expects
         return res.status(200).json({
-            id: `poem_${category || 'general'}_${Date.now()}`,
-            kavithai: poemText
+            id: `poem_${Date.now()}`,
+            category: category,
+            kavithai: poemText,
+            poem: poemText // Duplicate fallback key just in case your UI looks for data.poem
         });
     }
 
-    // 3. Handle POST Requests (Liking a poem OR Submitting a poem)
+    // 4. Handle POST Requests (Likes and Custom Creations)
     if (req.method === 'POST') {
         const { id, title, content } = req.body;
 
-        // Case A: It's a "Like" action (frontend sends an 'id')
+        // Sandbox/JSFiddle Like Operation Counter Handler
         if (id) {
-            console.log(`Poem upvoted: ${id}`);
-            const simulatedLikesCount = Math.floor(Math.random() * 45) + 5; 
-            
             return res.status(200).json({
                 message: "Like registered successfully!",
                 id: id,
-                likes: simulatedLikesCount
+                likes: Math.fold(Math.random() * 30) + 5
             });
         }
 
-        // Case B: It's a "Create/Submit" action (frontend sends 'title' and 'content')
-        if (title && content) {
-            console.log("New poem submitted:", { title, content });
-            
+        // Custom Submission Handler
+        if (title || content) {
             return res.status(201).json({
                 message: "Poem created successfully!",
                 status: "success"
             });
         }
-
-        return res.status(400).json({ error: "Invalid POST request data format structure." });
     }
 
     return res.status(405).json({ error: `Method ${req.method} Not Allowed` });
